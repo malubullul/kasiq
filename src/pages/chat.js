@@ -29,6 +29,20 @@ export function renderChat(container) {
 
   // ── HTML Structure ─────────────────────────────
   container.innerHTML = `
+    <!-- Immersive Voice Overlay (OUTSIDE everything) -->
+    <div class="voice-overlay" id="voice-overlay">
+      <div class="voice-mic-circle">🎙️</div>
+      <div class="voice-status">Mendengarkan...</div>
+      <div class="voice-transcript-preview" id="voice-preview">"Ucapkan pengeluaranmu..."</div>
+      <div class="voice-waves">
+        <div class="voice-wave"></div>
+        <div class="voice-wave"></div>
+        <div class="voice-wave"></div>
+        <div class="voice-wave"></div>
+        <div class="voice-wave"></div>
+      </div>
+    </div>
+
     <div class="chat-layout">
       <!-- Session Sidebar -->
       <div class="session-sidebar" id="session-sidebar">
