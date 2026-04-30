@@ -29,23 +29,8 @@ export function renderChat(container) {
 
   // ── HTML Structure ─────────────────────────────
   container.innerHTML = `
-    <!-- Immersive Voice Overlay (FORCE TOP LEVEL) -->
-    <div class="voice-overlay" id="voice-overlay" style="position:fixed !important; top:0 !important; left:0 !important; width:100vw !important; height:100vh !important;">
-      <button class="voice-close-btn" id="voice-close-btn">✕</button>
-      <div class="voice-mic-circle">🎙️</div>
-      <div class="voice-status">Mendengarkan...</div>
-      <div class="voice-transcript-preview" id="voice-preview">"Ucapkan pengeluaranmu..."</div>
-      <div class="voice-waves">
-        <div class="voice-wave"></div>
-        <div class="voice-wave"></div>
-        <div class="voice-wave"></div>
-        <div class="voice-wave"></div>
-        <div class="voice-wave"></div>
-      </div>
-      <div style="margin-top:20px; color:rgba(0,0,0,0.3); font-size:0.8rem;">Diam 5 detik untuk otomatis simpan</div>
-    </div>
-
     <div class="chat-layout">
+      <!-- Session Sidebar -->
       <!-- Session Sidebar -->
       <div class="session-sidebar" id="session-sidebar">
         <div class="sidebar-header">
