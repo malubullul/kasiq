@@ -370,26 +370,6 @@ export function renderChat(container) {
         body.mime_type = imagePayload.mimeType;
       }
 
-      const response = await fetch('http://127.0.0.1:3000/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
-      });
-
-      document.getElementById(typingId)?.remove();
-
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const data = await response.json();
-
-      if (!data.reply) {
-        addMessage(`<strong>Error:</strong> ${data.error || 'Respons tidak dikenal.'}`, 'ai');
-        return;
-      }
-
-      addMessage(data.reply, 'ai');
-
-      if (data.status === 'needs_confirmation' && data.options) {
-        renderConfirmationButtons(data.options, data.intelligence);
       }
 
       if (data.status === 'stored' || data.status === 'deleted') {
