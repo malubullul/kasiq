@@ -29,8 +29,9 @@ export function renderChat(container) {
 
   // ── HTML Structure ─────────────────────────────
   container.innerHTML = `
-    <!-- Immersive Voice Overlay (OUTSIDE everything) -->
-    <div class="voice-overlay" id="voice-overlay">
+    <!-- Immersive Voice Overlay (FORCE TOP LEVEL) -->
+    <div class="voice-overlay" id="voice-overlay" style="position:fixed !important; top:0 !important; left:0 !important; width:100vw !important; height:100vh !important;">
+      <button class="voice-close-btn" id="voice-close-btn">✕</button>
       <div class="voice-mic-circle">🎙️</div>
       <div class="voice-status">Mendengarkan...</div>
       <div class="voice-transcript-preview" id="voice-preview">"Ucapkan pengeluaranmu..."</div>
@@ -41,6 +42,7 @@ export function renderChat(container) {
         <div class="voice-wave"></div>
         <div class="voice-wave"></div>
       </div>
+      <div style="margin-top:20px; color:rgba(0,0,0,0.3); font-size:0.8rem;">Diam 5 detik untuk otomatis simpan</div>
     </div>
 
     <div class="chat-layout">
@@ -130,6 +132,18 @@ export function renderChat(container) {
   const sendRecordBtn = document.getElementById('send-record-btn');
   const voiceOverlay = document.getElementById('voice-overlay');
   const voicePreview = document.getElementById('voice-preview');
+  const voiceCloseBtn = document.getElementById('voice-close-btn');
+
+  let silenceTimer = null;
+  const startSilenceTimer = () => {
+    if (silenceTimer) clearTimeout(silenceTimer);
+    silenceTimer = setTimeout(() => {
+      if (recognition && startRecordBtn.classList.contains('recording-pulse')) {
+        console.log('Silence detected, stopping...');
+        recognition.stop();
+      }
+    }, 5000); // 5 seconds
+  };
 
   let activeSession = getTodayKey();
 
@@ -515,6 +529,7 @@ export function renderChat(container) {
     recognition.lang = 'id-ID';
 
     recognition.onresult = (e) => {
+      startSilenceTimer(); // Reset timer when voice detected
       let interim = '';
       for (let i = e.resultIndex; i < e.results.length; ++i) {
         if (e.results[i].isFinal) finalTranscript += e.results[i][0].transcript;
@@ -528,6 +543,7 @@ export function renderChat(container) {
 
     recognition.onerror = (e) => console.error('Speech error:', e.error);
     recognition.onend = () => {
+      if (silenceTimer) clearTimeout(silenceTimer);
       startRecordBtn.classList.remove('recording-pulse');
       startRecordBtn.style.color = '';
       if (finalTranscript.trim()) {
@@ -557,9 +573,17 @@ export function renderChat(container) {
       startRecordBtn.classList.add('recording-pulse');
       startRecordBtn.style.color = '#ef4444';
       voiceOverlay.classList.add('active');
+      startSilenceTimer(); // Initial timer
       input.placeholder = 'Mendengarkan... (Klik mic untuk berhenti)';
     }
   };
+
+  if (voiceCloseBtn) {
+    voiceCloseBtn.onclick = () => {
+      if (recognition) recognition.stop();
+      voiceOverlay.classList.remove('active');
+    };
+  }
 
   // ── Init ───────────────────────────────────────
   const history = getAllHistory();
