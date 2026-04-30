@@ -573,14 +573,16 @@ export function renderDashboard(container) {
   const chartContent = document.getElementById('chart-content');
 
   if (chartContent && timeline.length > 0) {
-    // Helper to request chart image using Chart.js (Vercel Friendly)
+    // Helper to request chart image using Chart.js (Classic Style)
     let myChart = null;
 
     const loadChart = (data) => {
-      chartContent.innerHTML = `<canvas id="momentumChart" style="width:100%; height:280px;"></canvas>`;
+      chartContent.innerHTML = `<canvas id="momentumChart" style="width:100%; height:320px;"></canvas>`;
       const ctx = document.getElementById('momentumChart').getContext('2d');
 
       const labels = data.pastData.map(d => d.date);
+      const incomeData = data.pastData.map(d => d.income || 0);
+      const expenseData = data.pastData.map(d => d.expense || 0);
       const balances = data.pastData.map(d => d.balance);
 
       if (myChart) myChart.destroy();
@@ -589,33 +591,55 @@ export function renderDashboard(container) {
         type: 'line',
         data: {
           labels: labels,
-          datasets: [{
-            label: 'Saldo (Rp)',
-            data: balances,
-            borderColor: '#3b82f6',
-            backgroundColor: 'rgba(59, 130, 246, 0.05)',
-            borderWidth: 3,
-            pointBackgroundColor: '#fff',
-            pointBorderColor: '#3b82f6',
-            pointRadius: 4,
-            pointHoverRadius: 6,
-            tension: 0.4,
-            fill: true
-          }]
+          datasets: [
+            {
+              label: 'Pemasukan',
+              data: incomeData,
+              borderColor: '#10b981',
+              backgroundColor: 'rgba(16, 185, 129, 0.1)',
+              borderWidth: 2.5,
+              pointRadius: 4,
+              tension: 0, // Straight lines
+              fill: true
+            },
+            {
+              label: 'Pengeluaran',
+              data: expenseData,
+              borderColor: '#ef4444',
+              backgroundColor: 'rgba(239, 68, 68, 0.05)',
+              borderWidth: 2.5,
+              pointRadius: 4,
+              tension: 0, // Straight lines
+              fill: false
+            }
+          ]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
           plugins: {
-            legend: { display: false },
+            legend: { 
+              display: true, 
+              position: 'top',
+              labels: { usePointStyle: true, font: { family: 'Inter', size: 12, weight: '600' } }
+            },
             tooltip: {
+              enabled: true,
               backgroundColor: '#1e293b',
-              titleFont: { size: 12, weight: 'bold' },
-              bodyFont: { size: 12 },
-              padding: 12,
-              displayColors: false,
+              padding: 16,
+              cornerRadius: 12,
+              titleFont: { size: 14, weight: 'bold' },
+              bodyFont: { size: 13 },
               callbacks: {
-                label: (context) => `Saldo: Rp ${context.raw.toLocaleString('id-ID')}`
+                label: (context) => {
+                  const label = context.dataset.label || '';
+                  const value = context.raw || 0;
+                  const balance = balances[context.dataIndex];
+                  if (context.datasetIndex === 0) {
+                    return [`${label}: Rp ${value.toLocaleString('id-ID')}`, `Total Saldo: Rp ${balance.toLocaleString('id-ID')}`];
+                  }
+                  return `${label}: Rp ${value.toLocaleString('id-ID')}`;
+                }
               }
             }
           },
@@ -625,15 +649,15 @@ export function renderDashboard(container) {
               ticks: { font: { size: 10 }, color: '#94a3b8' }
             },
             y: {
-              grid: { borderDash: [5, 5], color: '#f1f5f9' },
+              title: { display: true, text: 'Nominal (Rp)', font: { weight: 'bold' } },
+              grid: { color: '#f1f5f9' },
               ticks: {
                 font: { size: 10 },
                 color: '#94a3b8',
-                callback: (value) => 'Rp ' + (value / 1000) + 'k'
+                callback: (value) => value >= 1000000 ? (value / 1000000).toFixed(1) + 'M' : (value / 1000).toFixed(0) + 'k'
               }
             }
-          },
-          interaction: { intersect: false, mode: 'index' }
+          }
         }
       });
     };
