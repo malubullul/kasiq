@@ -425,14 +425,11 @@ export function renderChat(container) {
 
       // ── VERCEL FALLBACK: REAL Gemini AI Vision ──
       document.getElementById(typingId)?.remove();
-      console.warn('Backend offline, using Client-Side REAL AI...');
-
+      
       if (imagePayload) {
-        addMessage(`🧠 **Kas-iQ AI Vision**: Sedang membaca struk asli kamu...`, 'ai');
+        addMessage(`🧠 **Kas-iQ AI Vision**: Sedang menganalisis struk asli kamu...`, 'ai');
         
-        // --- API KEY AKTIF (Hackathon Mode) ---
         const GEMINI_API_KEY = "AIzaSyBKOmnnrxdJhdmV0lWmRrPgyBYZtQEqpXw"; 
-        // -------------------------------------
 
         try {
           const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
@@ -440,7 +437,7 @@ export function renderChat(container) {
           const payload = {
             contents: [{
               parts: [
-                { text: "Tolong baca struk ini. Berikan jawaban dalam bahasa Indonesia dengan rincian item, harga, dan total belanja. Format jawaban harus rapi dengan bullet points." },
+                { text: "Tolong baca struk ini secara mendetail. Sebutkan nama toko, rincian item beserta harganya, dan total akhirnya dalam bahasa Indonesia yang rapi." },
                 { inline_data: { mime_type: imagePayload.mimeType, data: imagePayload.base64 } }
               ]
             }]
@@ -448,13 +445,19 @@ export function renderChat(container) {
 
           const aiRes = await fetch(geminiUrl, {
             method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
           });
 
           const aiData = await aiRes.json();
+          
+          if (!aiData.candidates || aiData.candidates.length === 0) {
+            throw new Error("AI tidak memberikan jawaban");
+          }
+
           const aiReply = aiData.candidates[0].content.parts[0].text;
 
-          // Ekstrak angka total untuk sync data (opsional: bisa ditingkatkan dengan regex)
+          // Sync data ke Dashboard
           const amountMatch = aiReply.replace(/\./g, '').match(/total[:\s]*rp?\s*(\d+)/i);
           const finalAmount = amountMatch ? parseInt(amountMatch[1]) : 0;
 
@@ -469,12 +472,12 @@ export function renderChat(container) {
             }, 'stored');
           }
 
-          addMessage(`✅ **Kas-iQ Real AI**: \n\n${aiReply}`, 'ai');
+          addMessage(`✅ **Kas-iQ Real AI Results**:\n\n${aiReply}`, 'ai');
           return;
 
         } catch (aiErr) {
           console.error("AI Error:", aiErr);
-          addMessage("Gagal memanggil AI. Pastikan API Key kamu sudah benar!", "ai");
+          addMessage("❌ Gagal memanggil AI. Mohon cek koneksi atau API Key kamu.", "ai");
           return;
         }
       }
