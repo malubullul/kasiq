@@ -435,7 +435,7 @@ export function renderChat(container) {
 
       // Special handling for Images in Demo Mode
       if (imagePayload) {
-        amount = 75000; // Mock OCR total
+        amount = 133100; // Updated to match Lapoon total
         mockContent = "Analisis Struk Detail (Mode Demo)";
         addMessage(`🔍 **AI Vision (Mode Demo)**: Sedang membedah rincian struk...`, 'ai');
         await new Promise(r => setTimeout(r, 2000)); // Simulating deep processing
@@ -462,9 +462,9 @@ export function renderChat(container) {
         }, 'stored');
         
         addMessage(detailMessage, 'ai');
-        return; // Exit early since we handled it
-      }
-        // Regex Cerdas: Tangkap angka dan huruf 'k' (misal: 25k, 1jt, 1.000.000)
+        return; // Success, exit
+      } else {
+        // Regex Cerdas untuk Teks
         const kMatch = text.match(/(\d+)\s*k/i);
         const jtMatch = text.match(/(\d+)\s*jt/i);
         const normalMatch = text.match(/(\d+[\d\.]*)/);
