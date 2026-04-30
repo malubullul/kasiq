@@ -430,22 +430,31 @@ export function renderChat(container) {
 
       const text = userMessage.toLowerCase();
       let amount = 0;
-      
-      // Regex Cerdas: Tangkap angka dan huruf 'k' (misal: 25k, 1jt, 1.000.000)
-      const kMatch = text.match(/(\d+)\s*k/i);
-      const jtMatch = text.match(/(\d+)\s*jt/i);
-      const normalMatch = text.match(/(\d+[\d\.]*)/);
+      let mockIntent = 'track_expense';
+      let mockContent = userMessage;
 
-      if (kMatch) amount = parseInt(kMatch[1]) * 1000;
-      else if (jtMatch) amount = parseInt(jtMatch[1]) * 1000000;
-      else if (normalMatch) amount = parseInt(normalMatch[1].replace(/\./g, ''));
+      // Special handling for Images in Demo Mode
+      if (imagePayload) {
+        amount = 75000; // Mock OCR result for demo
+        mockContent = "Analisis Struk (Mode Demo)";
+        addMessage(`🔍 **AI Vision (Mode Demo)**: Sedang menganalisis struk...`, 'ai');
+        await new Promise(r => setTimeout(r, 1500)); // Simulating processing
+      } else {
+        // Regex Cerdas: Tangkap angka dan huruf 'k' (misal: 25k, 1jt, 1.000.000)
+        const kMatch = text.match(/(\d+)\s*k/i);
+        const jtMatch = text.match(/(\d+)\s*jt/i);
+        const normalMatch = text.match(/(\d+[\d\.]*)/);
+
+        if (kMatch) amount = parseInt(kMatch[1]) * 1000;
+        else if (jtMatch) amount = parseInt(jtMatch[1]) * 1000000;
+        else if (normalMatch) amount = parseInt(normalMatch[1].replace(/\./g, ''));
+      }
 
       const isIncome = text.includes('gaji') || text.includes('masuk') || text.includes('dapat') || text.includes('bonus');
       
       if (amount > 0) {
-        // Simulasi data intelijen untuk syncWithIntelligence
         const mockIntelligence = {
-          raw_text: userMessage,
+          raw_text: mockContent,
           amount: amount,
           type: isIncome ? 'income' : 'expense',
           category: text.includes('makan') ? 'Makanan' : text.includes('kopi') ? 'Makanan' : text.includes('baju') ? 'Belanja' : 'Lainnya',
@@ -454,9 +463,9 @@ export function renderChat(container) {
         };
 
         syncWithIntelligence(mockIntelligence, 'stored');
-        addMessage(`✅ **Kas-iQ Intelligence (Local)**: Berhasil mencatat "${userMessage}" senilai Rp ${amount.toLocaleString('id-ID')}. (Tersimpan di Cloud Lokal)`, 'ai');
+        addMessage(`✅ **Kas-iQ Intelligence (Local)**: Berhasil menganalisis transaksi senilai Rp ${amount.toLocaleString('id-ID')}. (Tersimpan di Cloud Lokal)`, 'ai');
       } else {
-        addMessage("Maaf, server sedang sibuk. Tapi saya bisa bantu catat pengeluaranmu secara langsung! Coba ketik: **'beli kopi 25k'** atau **'makan 35.000'**.", 'ai');
+        addMessage("Maaf, server AI sedang sinkronisasi. Tapi saya tetap bisa bantu catat! Coba ketik: **'beli kopi 25k'** atau gunakan **Voice Note**.", 'ai');
       }
     }
   }
