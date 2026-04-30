@@ -423,55 +423,65 @@ export function renderChat(container) {
         throw new Error('Server issues');
       }
 
-    } catch (err) {
-      // ── VERCEL FALLBACK: Client-Side Intelligence ──
+      // ── VERCEL FALLBACK: REAL Gemini AI Vision ──
       document.getElementById(typingId)?.remove();
-      console.warn('Backend offline, using Client-Side Intelligence...');
+      console.warn('Backend offline, using Client-Side REAL AI...');
 
+      if (imagePayload) {
+        addMessage(`🧠 **Kas-iQ AI Vision**: Sedang membaca struk asli kamu...`, 'ai');
+        
+        // --- MASUKKAN API KEY KAMU DI SINI ---
+        const GEMINI_API_KEY = "MASUKKAN_API_KEY_KAMU_DI_SINI"; 
+        // -------------------------------------
+
+        try {
+          const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+          
+          const payload = {
+            contents: [{
+              parts: [
+                { text: "Tolong baca struk ini. Berikan jawaban dalam bahasa Indonesia dengan rincian item, harga, dan total belanja. Format jawaban harus rapi dengan bullet points." },
+                { inline_data: { mime_type: imagePayload.mimeType, data: imagePayload.base64 } }
+              ]
+            }]
+          };
+
+          const aiRes = await fetch(geminiUrl, {
+            method: 'POST',
+            body: JSON.stringify(payload)
+          });
+
+          const aiData = await aiRes.json();
+          const aiReply = aiData.candidates[0].content.parts[0].text;
+
+          // Ekstrak angka total untuk sync data (opsional: bisa ditingkatkan dengan regex)
+          const amountMatch = aiReply.replace(/\./g, '').match(/total[:\s]*rp?\s*(\d+)/i);
+          const finalAmount = amountMatch ? parseInt(amountMatch[1]) : 0;
+
+          if (finalAmount > 0) {
+            syncWithIntelligence({
+              raw_text: "Transaksi Gambar (AI Real)",
+              amount: finalAmount,
+              type: 'expense',
+              category: 'Belanja',
+              confidence: 0.99,
+              intent: 'track_expense'
+            }, 'stored');
+          }
+
+          addMessage(`✅ **Kas-iQ Real AI**: \n\n${aiReply}`, 'ai');
+          return;
+
+        } catch (aiErr) {
+          console.error("AI Error:", aiErr);
+          addMessage("Gagal memanggil AI. Pastikan API Key kamu sudah benar!", "ai");
+          return;
+        }
+      }
+
+      // Fallback untuk Teks jika bukan gambar
       const text = userMessage.toLowerCase();
       let amount = 0;
-      let mockIntent = 'track_expense';
-      let mockContent = userMessage;
-
-      // Special handling for Images in Demo Mode
-      if (imagePayload) {
-        amount = 70000; // Total dari struk Karis Jaya Shop
-        mockContent = "Analisis Struk: Karis Jaya Shop";
-        addMessage(`🔍 **AI Vision**: Sedang membedah rincian struk...`, 'ai');
-        await new Promise(r => setTimeout(r, 2000)); // Simulating deep processing
-
-        const detailMessage = `✅ **Kas-iQ AI Vision**: Berhasil menganalisis struk dari **Karis Jaya Shop** 🛒:
-        
-• **1 Lusin Indomie Goreng**: Rp 36.000
-• **1x Fruit Tea Apple (500ml)**: Rp 7.000
-• **1x Belfood Sosis Bakar**: Rp 27.000
-
----
-💰 **Total Belanja**: Rp 70.000
-📍 *Lokasi: Karis Jaya Shop, Surabaya*
-*(Data telah diamankan ke Cloud Lokal)*`;
-
-        syncWithIntelligence({
-          raw_text: "Karis Jaya Shop - Sembako",
-          amount: 70000,
-          type: 'expense',
-          category: 'Belanja',
-          confidence: 0.99,
-          intent: 'track_expense'
-        }, 'stored');
-        
-        addMessage(detailMessage, 'ai');
-        return; // Success, exit
-      } else {
-        // Regex Cerdas untuk Teks
-        const kMatch = text.match(/(\d+)\s*k/i);
-        const jtMatch = text.match(/(\d+)\s*jt/i);
-        const normalMatch = text.match(/(\d+[\d\.]*)/);
-
-        if (kMatch) amount = parseInt(kMatch[1]) * 1000;
-        else if (jtMatch) amount = parseInt(jtMatch[1]) * 1000000;
-        else if (normalMatch) amount = parseInt(normalMatch[1].replace(/\./g, ''));
-      }
 
       const isIncome = text.includes('gaji') || text.includes('masuk') || text.includes('dapat') || text.includes('bonus');
       
