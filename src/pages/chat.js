@@ -440,23 +440,24 @@ export function renderChat(container) {
         addMessage(`🔍 **AI Vision (Mode Demo)**: Sedang membedah rincian struk...`, 'ai');
         await new Promise(r => setTimeout(r, 2000)); // Simulating deep processing
 
-        const detailMessage = `✅ **Kas-iQ Intelligence (Local)**: Berhasil menganalisis rincian struk:
+        const detailMessage = `✅ **Kas-iQ AI Vision**: Berhasil menganalisis struk dari **Lapoon Cafe** ☕:
         
-• **Makan Siang (Ayam Bakar)**: Rp 45.000
-• **Minuman (Es Jeruk)**: Rp 15.000
-• **Camilan (Kerupuk)**: Rp 10.000
-• **Biaya Parkir**: Rp 5.000
+• **2x Cafe Latte (L)**: Rp 76.000
+• **1x Beef Croissant**: Rp 35.000
+• **1x Mineral Water**: Rp 10.000
+• **Tax & Service (10%)**: Rp 12.100
 
 ---
-💰 **Total Terdeteksi**: Rp 75.000
-*(Data telah disimpan ke Cloud Lokal)*`;
+💰 **Total Tagihan**: Rp 133.100
+📍 *Lokasi: Lapoon Cafe, Lantai 1*
+*(Data telah diamankan ke Cloud Lokal)*`;
 
         syncWithIntelligence({
-          raw_text: "Makan & Parkir",
-          amount: amount,
+          raw_text: "Lapoon Cafe - Coffee & Pastry",
+          amount: 133100,
           type: 'expense',
           category: 'Makanan',
-          confidence: 0.98,
+          confidence: 0.99,
           intent: 'track_expense'
         }, 'stored');
         
