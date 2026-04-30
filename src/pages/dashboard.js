@@ -573,106 +573,69 @@ export function renderDashboard(container) {
   const chartContent = document.getElementById('chart-content');
 
   if (chartContent && timeline.length > 0) {
-    // Helper to request chart image
+    // Helper to request chart image using Chart.js (Vercel Friendly)
+    let myChart = null;
+
     const loadChart = (data) => {
-      chartContent.innerHTML = `<div class="chart-empty"><p>⏳ Memuat chart performa tinggi...</p></div>`;
+      chartContent.innerHTML = `<canvas id="momentumChart" style="width:100%; height:280px;"></canvas>`;
+      const ctx = document.getElementById('momentumChart').getContext('2d');
 
-      fetch('http://127.0.0.1:3000/api/chart', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      })
-        .then(res => res.blob())
-        .then(blob => {
-          const url = URL.createObjectURL(blob);
-          chartContent.innerHTML = `
-            <div style="position:relative; width:100%; display:flex; justify-content:center; align-items:center;" id="chart-img-container">
-              <img id="perf-img" src="${url}" style="width:100%; max-width:800px; height:auto; border-radius:12px; margin-top:16px; cursor:crosshair;" alt="Financial Momentum Chart" />
-              <div id="chart-tooltip" style="position:absolute; pointer-events:none; opacity:0; transition:opacity 0.2s; background:rgba(15,23,42,0.95); color:white; padding:12px; border-radius:12px; font-size:0.75rem; box-shadow:0 10px 25px rgba(0,0,0,0.2); z-index:10; white-space:nowrap; border:1px solid rgba(255,255,255,0.1); backdrop-filter:blur(4px);"></div>
-            </div>
-          `;
+      const labels = data.pastData.map(d => d.date);
+      const balances = data.pastData.map(d => d.balance);
 
-          // Tooltip Interactive Logic Overlay for the PNG
-          const imgContainer = document.getElementById('chart-img-container');
-          const tooltip = document.getElementById('chart-tooltip');
+      if (myChart) myChart.destroy();
 
-          if (imgContainer && tooltip && data.pastData.length > 0) {
-            imgContainer.addEventListener('mousemove', (e) => {
-              const rect = imgContainer.getBoundingClientRect();
-              // Offset boundaries to match Matplotlib's inner plotting area (approximate padding)
-              const paddingLeft = rect.width * 0.08;
-              const paddingRight = rect.width * 0.05;
-              const plotWidth = rect.width - paddingLeft - paddingRight;
-
-              let x = e.clientX - rect.left - paddingLeft;
-              if (x < 0) x = 0;
-              if (x >= plotWidth) x = plotWidth - 1;
-
-              const ratio = x / plotWidth;
-              let index = Math.floor(ratio * data.pastData.length);
-              index = Math.max(0, Math.min(index, data.pastData.length - 1));
-
-              const dayData = data.pastData[index];
-              if (dayData) {
-                tooltip.style.opacity = '1';
-                tooltip.style.left = `${e.clientX - rect.left + 15}px`;
-                tooltip.style.top = `${e.clientY - rect.top + 15}px`;
-                tooltip.innerHTML = `
-                  <div style="font-weight:700; margin-bottom:6px; color:#94a3b8; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:4px;">${dayData.date}</div>
-                  <div style="display:flex; justify-content:space-between; gap:12px; margin-bottom:4px;">
-                    <span style="color:#10b981;">Pemasukan:</span> 
-                    <strong style="color:white;">Rp ${(dayData.income || 0).toLocaleString('id-ID')}</strong>
-                  </div>
-                  <div style="display:flex; justify-content:space-between; gap:12px; margin-bottom:4px;">
-                    <span style="color:#ef4444;">Pengeluaran:</span> 
-                    <strong style="color:white;">Rp ${(dayData.expense || 0).toLocaleString('id-ID')}</strong>
-                  </div>
-                  <div style="display:flex; justify-content:space-between; gap:12px; margin-top:6px; padding-top:6px; border-top:1px dashed rgba(255,255,255,0.2);">
-                    <span style="color:#3b82f6;">Total Saldo:</span> 
-                    <strong style="color:white;">Rp ${dayData.balance.toLocaleString('id-ID')}</strong>
-                  </div>
-                `;
+      myChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Saldo (Rp)',
+            data: balances,
+            borderColor: '#3b82f6',
+            backgroundColor: 'rgba(59, 130, 246, 0.05)',
+            borderWidth: 3,
+            pointBackgroundColor: '#fff',
+            pointBorderColor: '#3b82f6',
+            pointRadius: 4,
+            pointHoverRadius: 6,
+            tension: 0.4,
+            fill: true
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#1e293b',
+              titleFont: { size: 12, weight: 'bold' },
+              bodyFont: { size: 12 },
+              padding: 12,
+              displayColors: false,
+              callbacks: {
+                label: (context) => `Saldo: Rp ${context.raw.toLocaleString('id-ID')}`
               }
-            });
-            imgContainer.addEventListener('mouseleave', () => {
-              tooltip.style.opacity = '0';
-            });
-
-            // Click Interaction to filter list
-            imgContainer.addEventListener('click', (e) => {
-              const rect = imgContainer.getBoundingClientRect();
-              const paddingLeft = rect.width * 0.08;
-              const paddingRight = rect.width * 0.05;
-              const plotWidth = rect.width - paddingLeft - paddingRight;
-
-              let x = e.clientX - rect.left - paddingLeft;
-              if (x < 0) x = 0;
-              if (x >= plotWidth) x = plotWidth - 1;
-
-              const ratio = x / plotWidth;
-              let index = Math.floor(ratio * data.pastData.length);
-              index = Math.max(0, Math.min(index, data.pastData.length - 1));
-
-              const dayData = data.pastData[index];
-              if (dayData && dayData.date) {
-                renderTxList(dayData.date);
-                const listEl = document.getElementById('dashboard-trans-list');
-                if (listEl) {
-                  listEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                  // Add a brief highlight flash
-                  listEl.style.transition = 'box-shadow 0.3s ease';
-                  listEl.style.boxShadow = '0 0 0 4px #bfdbfe';
-                  setTimeout(() => { listEl.style.boxShadow = 'none'; }, 1000);
-                }
+            }
+          },
+          scales: {
+            x: {
+              grid: { display: false },
+              ticks: { font: { size: 10 }, color: '#94a3b8' }
+            },
+            y: {
+              grid: { borderDash: [5, 5], color: '#f1f5f9' },
+              ticks: {
+                font: { size: 10 },
+                color: '#94a3b8',
+                callback: (value) => 'Rp ' + (value / 1000) + 'k'
               }
-            });
-          }
-
-        })
-        .catch(err => {
-          console.error('Chart fetch error:', err);
-          chartContent.innerHTML = `<div class="chart-empty"><p>⚠️ Gagal memuat chart. Pastikan Python & Matplotlib terinstall.</p></div>`;
-        });
+            }
+          },
+          interaction: { intersect: false, mode: 'index' }
+        }
+      });
     };
 
     const settings = JSON.parse(localStorage.getItem('kasiq_settings') || '{}');
