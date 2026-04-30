@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kas-iQ | AI Finance Assistant</title>
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+
+<body>
+  <!-- Navbar (Top Sticky) -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <div class="logo" style="cursor: pointer;" onclick="window.location.hash='dashboard'">Kas-iQ</div>
+      <div class="nav-links">
+        <a href="#" data-route="chat" class="active">Chat</a>
+        <a href="#" data-route="dashboard">Dashboard</a>
+        <a href="#" data-route="insight">Insight</a>
+      </div>
+      <div class="nav-actions">
+        <button class="logout-btn" onclick="window.logout()">Logout</button>
+        <div class="profile-icon"
+          style="overflow: hidden; border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+          <img src="/user_avatar.png" alt="Profile" style="width: 100%; height: 100%; object-fit: cover;" />
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content Area -->
+  <main id="app">
+    <!-- Dynamic content injected here -->
+  </main>
+  <script type="module" src="/src/main.js"></script>
+</body>
+
+</html>
