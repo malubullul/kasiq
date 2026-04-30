@@ -447,15 +447,15 @@ export function renderChat(container) {
 • **1x Belfood Sosis Bakar**: Rp 27.000
 
 ---
-💰 **Total Tagihan**: Rp 133.100
-📍 *Lokasi: Lapoon Cafe, Lantai 1*
+💰 **Total Belanja**: Rp 70.000
+📍 *Lokasi: Karis Jaya Shop, Surabaya*
 *(Data telah diamankan ke Cloud Lokal)*`;
 
         syncWithIntelligence({
-          raw_text: "Lapoon Cafe - Coffee & Pastry",
-          amount: 133100,
+          raw_text: "Karis Jaya Shop - Sembako",
+          amount: 70000,
           type: 'expense',
-          category: 'Makanan',
+          category: 'Belanja',
           confidence: 0.99,
           intent: 'track_expense'
         }, 'stored');
