@@ -531,6 +531,10 @@ export function renderChat(container) {
       if (silenceTimer) clearTimeout(silenceTimer);
       startRecordBtn.classList.remove('recording-pulse');
       startRecordBtn.style.color = '';
+      
+      // FIX: Close the overlay when recording ends (auto or manual)
+      if (voiceOverlay) voiceOverlay.classList.remove('active');
+
       if (finalTranscript.trim()) {
         addMessage(finalTranscript, 'user');
         getAIResponse(finalTranscript);
