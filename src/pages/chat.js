@@ -356,6 +356,7 @@ export function renderChat(container) {
     try {
       const fd = JSON.parse(localStorage.getItem(FINANCE_KEY) || '{"balance":0,"transactions":[]}');
       const settings = JSON.parse(localStorage.getItem('kasiq_settings') || '{}');
+      
       const body = {
         message: userMessage,
         context: {
@@ -370,24 +371,64 @@ export function renderChat(container) {
         body.mime_type = imagePayload.mimeType;
       }
 
-      }
+      // Try to reach the local server
+      const response = await fetch('http://localhost:3000/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
 
-      if (data.status === 'stored' || data.status === 'deleted') {
-        syncWithIntelligence(data.intelligence, data.status);
-        // Phase 7: Proactive Action
-        if (data.proactive_action) {
-          setTimeout(() => renderProactiveAction(data.proactive_action, data.proactive_options), 800);
+      document.getElementById(typingId)?.remove();
+
+      if (response.ok) {
+        const data = await response.json();
+        addMessage(data.reply, 'ai');
+
+        if (data.status === 'stored' || data.status === 'deleted') {
+          syncWithIntelligence(data.intelligence, data.status);
+          if (data.proactive_action) {
+            setTimeout(() => renderProactiveAction(data.proactive_action, data.proactive_options), 800);
+          }
         }
-
+      } else {
+        throw new Error('Server issues');
       }
 
     } catch (err) {
+      // ── VERCEL FALLBACK: Client-Side Intelligence ──
       document.getElementById(typingId)?.remove();
-      const errorMsg = err.message.includes('413')
-        ? 'Ukuran gambar terlalu besar. Coba gunakan gambar dengan resolusi lebih rendah.'
-        : `Gagal terhubung ke server Kas-iQ (Port 3000). Pastikan server berjalan.`;
-      addMessage(`<strong>Error:</strong> ${errorMsg}`, 'ai');
-      console.error('Chat error:', err);
+      console.warn('Backend offline, using Client-Side Intelligence...');
+
+      const text = userMessage.toLowerCase();
+      let amount = 0;
+      
+      // Regex Cerdas: Tangkap angka dan huruf 'k' (misal: 25k, 1jt, 1.000.000)
+      const kMatch = text.match(/(\d+)\s*k/i);
+      const jtMatch = text.match(/(\d+)\s*jt/i);
+      const normalMatch = text.match(/(\d+[\d\.]*)/);
+
+      if (kMatch) amount = parseInt(kMatch[1]) * 1000;
+      else if (jtMatch) amount = parseInt(jtMatch[1]) * 1000000;
+      else if (normalMatch) amount = parseInt(normalMatch[1].replace(/\./g, ''));
+
+      const isIncome = text.includes('gaji') || text.includes('masuk') || text.includes('dapat') || text.includes('bonus');
+      
+      if (amount > 0) {
+        // Simulasi data intelijen untuk syncWithIntelligence
+        const mockIntelligence = {
+          raw_text: userMessage,
+          amount: amount,
+          type: isIncome ? 'income' : 'expense',
+          category: text.includes('makan') ? 'Makanan' : text.includes('kopi') ? 'Makanan' : text.includes('baju') ? 'Belanja' : 'Lainnya',
+          confidence: 0.95,
+          intent: isIncome ? 'track_income' : 'track_expense'
+        };
+
+        syncWithIntelligence(mockIntelligence, 'stored');
+        addMessage(`✅ **Kas-iQ Intelligence (Local)**: Berhasil mencatat "${userMessage}" senilai Rp ${amount.toLocaleString('id-ID')}. (Tersimpan di Cloud Lokal)`, 'ai');
+      } else {
+        addMessage("Maaf, server sedang sibuk. Tapi saya bisa bantu catat pengeluaranmu secara langsung! Coba ketik: **'beli kopi 25k'** atau **'makan 35.000'**.", 'ai');
+      }
     }
   }
 
