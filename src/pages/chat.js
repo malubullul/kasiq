@@ -430,8 +430,8 @@ export function renderChat(container) {
       if (imagePayload) {
         addMessage(`🧠 **Kas-iQ AI Vision**: Sedang membaca struk asli kamu...`, 'ai');
         
-        // --- MASUKKAN API KEY KAMU DI SINI ---
-        const GEMINI_API_KEY = "MASUKKAN_API_KEY_KAMU_DI_SINI"; 
+        // --- API KEY AKTIF (Hackathon Mode) ---
+        const GEMINI_API_KEY = "AIzaSyBKOmnnrxdJhdmV0lWmRrPgyBYZtQEqpXw"; 
         // -------------------------------------
 
         try {
