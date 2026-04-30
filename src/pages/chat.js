@@ -83,6 +83,20 @@ export function renderChat(container) {
         </div>
       </div>
     </div>
+
+    <!-- Immersive Voice Overlay -->
+    <div class="voice-overlay" id="voice-overlay">
+      <div class="voice-mic-circle">🎙️</div>
+      <div class="voice-status">Mendengarkan...</div>
+      <div class="voice-transcript-preview" id="voice-preview">"Ucapkan pengeluaranmu..."</div>
+      <div class="voice-waves">
+        <div class="voice-wave"></div>
+        <div class="voice-wave"></div>
+        <div class="voice-wave"></div>
+        <div class="voice-wave"></div>
+        <div class="voice-wave"></div>
+      </div>
+    </div>
   `;
 
   // ── DOM References ─────────────────────────────
@@ -100,6 +114,8 @@ export function renderChat(container) {
   const recordingUi = document.getElementById('recording-ui');
   const startRecordBtn = document.getElementById('start-record-btn');
   const sendRecordBtn = document.getElementById('send-record-btn');
+  const voiceOverlay = document.getElementById('voice-overlay');
+  const voicePreview = document.getElementById('voice-preview');
 
   let activeSession = getTodayKey();
 
@@ -491,6 +507,9 @@ export function renderChat(container) {
         else interim += e.results[i][0].transcript;
       }
       input.value = finalTranscript + interim;
+      if (voicePreview) {
+        voicePreview.innerText = `"${finalTranscript + interim}"`;
+      }
     };
 
     recognition.onerror = (e) => console.error('Speech error:', e.error);
@@ -515,12 +534,15 @@ export function renderChat(container) {
       recognition.stop();
       startRecordBtn.classList.remove('recording-pulse');
       startRecordBtn.style.color = '';
+      voiceOverlay.classList.remove('active');
     } else {
       finalTranscript = '';
       input.value = '';
+      voicePreview.innerText = '"Ucapkan pengeluaranmu..."';
       recognition.start();
       startRecordBtn.classList.add('recording-pulse');
       startRecordBtn.style.color = '#ef4444';
+      voiceOverlay.classList.add('active');
       input.placeholder = 'Mendengarkan... (Klik mic untuk berhenti)';
     }
   };
