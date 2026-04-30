@@ -435,11 +435,34 @@ export function renderChat(container) {
 
       // Special handling for Images in Demo Mode
       if (imagePayload) {
-        amount = 75000; // Mock OCR result for demo
-        mockContent = "Analisis Struk (Mode Demo)";
-        addMessage(`🔍 **AI Vision (Mode Demo)**: Sedang menganalisis struk...`, 'ai');
-        await new Promise(r => setTimeout(r, 1500)); // Simulating processing
-      } else {
+        amount = 75000; // Mock OCR total
+        mockContent = "Analisis Struk Detail (Mode Demo)";
+        addMessage(`🔍 **AI Vision (Mode Demo)**: Sedang membedah rincian struk...`, 'ai');
+        await new Promise(r => setTimeout(r, 2000)); // Simulating deep processing
+
+        const detailMessage = `✅ **Kas-iQ Intelligence (Local)**: Berhasil menganalisis rincian struk:
+        
+• **Makan Siang (Ayam Bakar)**: Rp 45.000
+• **Minuman (Es Jeruk)**: Rp 15.000
+• **Camilan (Kerupuk)**: Rp 10.000
+• **Biaya Parkir**: Rp 5.000
+
+---
+💰 **Total Terdeteksi**: Rp 75.000
+*(Data telah disimpan ke Cloud Lokal)*`;
+
+        syncWithIntelligence({
+          raw_text: "Makan & Parkir",
+          amount: amount,
+          type: 'expense',
+          category: 'Makanan',
+          confidence: 0.98,
+          intent: 'track_expense'
+        }, 'stored');
+        
+        addMessage(detailMessage, 'ai');
+        return; // Exit early since we handled it
+      }
         // Regex Cerdas: Tangkap angka dan huruf 'k' (misal: 25k, 1jt, 1.000.000)
         const kMatch = text.match(/(\d+)\s*k/i);
         const jtMatch = text.match(/(\d+)\s*jt/i);
