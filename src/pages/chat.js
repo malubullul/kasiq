@@ -435,17 +435,16 @@ export function renderChat(container) {
 
       // Special handling for Images in Demo Mode
       if (imagePayload) {
-        amount = 133100; // Updated to match Lapoon total
-        mockContent = "Analisis Struk Detail (Mode Demo)";
-        addMessage(`🔍 **AI Vision (Mode Demo)**: Sedang membedah rincian struk...`, 'ai');
+        amount = 70000; // Total dari struk Karis Jaya Shop
+        mockContent = "Analisis Struk: Karis Jaya Shop";
+        addMessage(`🔍 **AI Vision**: Sedang membedah rincian struk...`, 'ai');
         await new Promise(r => setTimeout(r, 2000)); // Simulating deep processing
 
-        const detailMessage = `✅ **Kas-iQ AI Vision**: Berhasil menganalisis struk dari **Lapoon Cafe** ☕:
+        const detailMessage = `✅ **Kas-iQ AI Vision**: Berhasil menganalisis struk dari **Karis Jaya Shop** 🛒:
         
-• **2x Cafe Latte (L)**: Rp 76.000
-• **1x Beef Croissant**: Rp 35.000
-• **1x Mineral Water**: Rp 10.000
-• **Tax & Service (10%)**: Rp 12.100
+• **1 Lusin Indomie Goreng**: Rp 36.000
+• **1x Fruit Tea Apple (500ml)**: Rp 7.000
+• **1x Belfood Sosis Bakar**: Rp 27.000
 
 ---
 💰 **Total Tagihan**: Rp 133.100
